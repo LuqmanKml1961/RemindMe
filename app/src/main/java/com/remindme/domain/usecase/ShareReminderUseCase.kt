@@ -19,16 +19,18 @@ class ShareReminderUseCase @Inject constructor(
             append("RemindMe: ${reminder.title}")
             when (reminder.type) {
                 com.remindme.domain.model.ReminderType.MEDICAL -> {
-                    reminder.medicineName?.let { append("\nMedicine: $it") }
-                    reminder.dosage?.let { append("\nDosage: $it") }
-                    reminder.instructions?.let { append("\nInstructions: $it") }
+                    reminder.medications.forEach { med ->
+                        append("\nMedicine: ${med.name}")
+                        med.dosage.takeIf { it.isNotBlank() }?.let { append("\nDosage: $it") }
+                        med.instructions.takeIf { it.isNotBlank() }?.let { append("\nInstructions: $it") }
+                    }
                 }
                 com.remindme.domain.model.ReminderType.MONTHLY -> {
                     reminder.amount?.let { append("\nAmount: RM$it") }
-                    reminder.recurrenceDays?.let { append("\nEvery $it days") }
                 }
                 else -> {}
             }
+            reminder.recurrence?.let { append("\nRepeats: ${it.label}") }
             reminder.dueDate?.let {
                 append("\nDue: ${it.toString().substring(0, 16)}")
             }

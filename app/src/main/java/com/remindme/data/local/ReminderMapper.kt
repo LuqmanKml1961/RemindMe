@@ -1,12 +1,20 @@
 package com.remindme.data.local
 
+import com.remindme.domain.model.Medication
+import com.remindme.domain.model.RecurrenceRule
 import com.remindme.domain.model.Reminder
 import com.remindme.domain.model.ReminderType
+import com.remindme.domain.model.VaultCategory
+import com.remindme.domain.model.VaultReference
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-fun ReminderEntity.toDomain(): Reminder {
+fun ReminderWithMeds.toDomain(): Reminder {
+    return reminder.toDomain(medications.map { it.toDomain() })
+}
+
+fun ReminderEntity.toDomain(medications: List<Medication> = emptyList()): Reminder {
     return Reminder(
         id = id,
         title = title,
@@ -17,11 +25,9 @@ fun ReminderEntity.toDomain(): Reminder {
         isCompleted = isCompleted,
         isArchived = isArchived,
         autoDelete = autoDelete,
-        medicineName = medicineName,
-        dosage = dosage,
-        instructions = instructions,
+        medications = medications,
         amount = amount,
-        recurrenceDays = recurrenceDays,
+        recurrence = RecurrenceRule.fromStorage(recurrence),
         shareId = shareId,
         sharedBy = sharedBy
     )
@@ -38,12 +44,43 @@ fun Reminder.toEntity(): ReminderEntity {
         isCompleted = isCompleted,
         isArchived = isArchived,
         autoDelete = autoDelete,
-        medicineName = medicineName,
-        dosage = dosage,
-        instructions = instructions,
         amount = amount,
-        recurrenceDays = recurrenceDays,
+        recurrence = recurrence?.toStorage(),
         shareId = shareId,
         sharedBy = sharedBy
+    )
+}
+
+fun MedicationEntity.toDomain(): Medication {
+    return Medication(id = id, name = name, dosage = dosage, instructions = instructions)
+}
+
+fun Medication.toEntity(reminderId: Long): MedicationEntity {
+    return MedicationEntity(
+        id = id,
+        reminderId = reminderId,
+        name = name,
+        dosage = dosage,
+        instructions = instructions
+    )
+}
+
+fun VaultReferenceEntity.toDomain(): VaultReference {
+    return VaultReference(
+        id = id,
+        category = VaultCategory.valueOf(category),
+        title = title,
+        note = note,
+        createdAt = createdAt
+    )
+}
+
+fun VaultReference.toEntity(): VaultReferenceEntity {
+    return VaultReferenceEntity(
+        id = id,
+        category = category.name,
+        title = title,
+        note = note,
+        createdAt = if (createdAt > 0L) createdAt else System.currentTimeMillis()
     )
 }

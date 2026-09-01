@@ -51,7 +51,7 @@ class AlarmScheduler @Inject constructor(
             putExtra(AlarmReceiver.EXTRA_REMINDER_ID, reminder.id)
             putExtra(AlarmReceiver.EXTRA_REMINDER_TITLE, reminder.title)
             putExtra(AlarmReceiver.EXTRA_REMINDER_DESCRIPTION, reminder.description.orEmpty())
-            putExtra(AlarmReceiver.EXTRA_RECURRENCE_DAYS, reminder.recurrenceDays ?: 0)
+            putExtra(AlarmReceiver.EXTRA_RECURRENCE_RULE, reminder.recurrence?.toStorage())
             putExtra(
                 AlarmReceiver.EXTRA_DUE_MILLIS,
                 reminder.dueDate?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli() ?: 0L

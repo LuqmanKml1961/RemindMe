@@ -15,6 +15,7 @@ import com.remindme.presentation.ui.screens.CreateReminderScreen
 import com.remindme.presentation.ui.screens.HomeScreen
 import com.remindme.presentation.ui.screens.SettingsScreen
 import com.remindme.presentation.ui.screens.TodoScreen
+import com.remindme.presentation.ui.screens.VaultScreen
 
 @Composable
 fun NavGraph(
@@ -85,6 +86,10 @@ fun NavGraph(
 
         composable(Screen.TodoScreen.route) {
             TodoScreen()
+        }
+
+        composable(Screen.VaultScreen.route) {
+            VaultScreen()
         }
 
         composable(Screen.SettingsScreen.route) {

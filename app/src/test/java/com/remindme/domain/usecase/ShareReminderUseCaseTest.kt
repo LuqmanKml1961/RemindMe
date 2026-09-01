@@ -1,6 +1,7 @@
 package com.remindme.domain.usecase
 
 import com.remindme.FakeReminderRepository
+import com.remindme.domain.model.Medication
 import com.remindme.domain.model.Reminder
 import com.remindme.domain.model.ReminderType
 import kotlinx.coroutines.runBlocking
@@ -20,8 +21,9 @@ class ShareReminderUseCaseTest {
         id = 1L,
         title = "Grandma medicine",
         type = ReminderType.MEDICAL,
-        medicineName = "Metformin",
-        dosage = "500mg daily",
+        medications = listOf(
+            Medication(name = "Metformin", dosage = "500mg daily")
+        ),
         shareId = "abc-123"
     )
 
@@ -47,6 +49,19 @@ class ShareReminderUseCaseTest {
         assertTrue(text.contains("Metformin"))
         assertTrue(text.contains("500mg daily"))
         assertTrue(text.contains("remindme://reminder/abc-123"))
+    }
+
+    @Test
+    fun `generateShareText includes recurrence label`() {
+        val reminder = reminderWithShareId().copy(
+            recurrence = com.remindme.domain.model.RecurrenceRule(
+                unit = com.remindme.domain.model.RecurrenceUnit.DAILY,
+                interval = 1
+            )
+        )
+        val text = useCase.generateShareText(reminder)
+
+        assertTrue(text.contains("Repeats: Daily"))
     }
 
     @Test

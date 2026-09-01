@@ -12,13 +12,12 @@ data class Reminder(
     val isCompleted: Boolean = false,
     val isArchived: Boolean = false,
     val autoDelete: Boolean = false,
-    // Medical specific
-    val medicineName: String? = null,
-    val dosage: String? = null,
-    val instructions: String? = null,
-    // Monthly specific
+    // Medical specific — one entry can hold multiple medications
+    val medications: List<Medication> = emptyList(),
+    // Monthly (bill) specific
     val amount: Double? = null,
-    val recurrenceDays: Int? = null,
+    // Repeat — applies to any type
+    val recurrence: RecurrenceRule? = null,
     // Sharing
     val shareId: String? = null,
     val sharedBy: String? = null

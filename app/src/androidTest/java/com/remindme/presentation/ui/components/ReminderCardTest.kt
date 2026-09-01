@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.remindme.domain.model.Medication
 import com.remindme.domain.model.Reminder
 import com.remindme.domain.model.ReminderType
 import com.remindme.presentation.ui.theme.RemindMeTheme
@@ -48,8 +49,9 @@ class ReminderCardTest {
     fun `medical reminder card shows medicine name`() {
         val medical = reminder.copy(
             type = ReminderType.MEDICAL,
-            medicineName = "Metformin",
-            dosage = "500mg"
+            medications = listOf(
+                Medication(name = "Metformin", dosage = "500mg")
+            )
         )
 
         composeTestRule.setContent {

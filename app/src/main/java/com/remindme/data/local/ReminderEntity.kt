@@ -21,15 +21,10 @@ data class ReminderEntity(
     val isArchived: Boolean = false,
     @ColumnInfo(name = "auto_delete")
     val autoDelete: Boolean = false,
-    // Medical specific
-    @ColumnInfo(name = "medicine_name")
-    val medicineName: String? = null,
-    val dosage: String? = null,
-    val instructions: String? = null,
-    // Monthly specific
+    // Monthly (bill) specific
     val amount: Double? = null,
-    @ColumnInfo(name = "recurrence_days")
-    val recurrenceDays: Int? = null,
+    // Repeat rule, stored as identifier string (see RecurrenceRule.toStorage)
+    val recurrence: String? = null,
     // Sharing
     @ColumnInfo(name = "share_id")
     val shareId: String? = null,

@@ -5,6 +5,9 @@ import com.remindme.FakeReminderRepository
 import com.remindme.FakeTodoRepository
 import com.remindme.MainDispatcherRule
 import com.remindme.data.local.AlarmScheduler
+import com.remindme.domain.model.Medication
+import com.remindme.domain.model.RecurrenceRule
+import com.remindme.domain.model.RecurrenceUnit
 import com.remindme.domain.model.Reminder
 import com.remindme.domain.model.ReminderType
 import com.remindme.domain.usecase.CreateReminderUseCase
@@ -104,25 +107,27 @@ class CreateReminderViewModelTest {
     }
 
     @Test
-    fun `medical type fields saved`() = runTest {
+    fun `medical type with medications saved`() = runTest {
         val reminderRepository = FakeReminderRepository()
         val vm = newViewModel(reminderRepository)
 
         vm.updateTitle("Medicine")
         vm.updateType(ReminderType.MEDICAL)
-        vm.updateMedicineName("Metformin")
-        vm.updateDosage("500mg")
-        vm.updateInstructions("After food")
+        vm.addMedication()
+        vm.updateMedicationName(0, "Metformin")
+        vm.updateMedicationDosage(0, "500mg")
+        vm.updateMedicationInstructions(0, "After food")
         vm.saveReminder()
 
         val saved = reminderRepository.reminders.value.first()
-        assertEquals("Metformin", saved.medicineName)
-        assertEquals("500mg", saved.dosage)
-        assertEquals("After food", saved.instructions)
+        assertEquals(1, saved.medications.size)
+        assertEquals("Metformin", saved.medications[0].name)
+        assertEquals("500mg", saved.medications[0].dosage)
+        assertEquals("After food", saved.medications[0].instructions)
     }
 
     @Test
-    fun `non medical type leaves medical fields null`() = runTest {
+    fun `non medical type leaves medications empty`() = runTest {
         val reminderRepository = FakeReminderRepository()
         val vm = newViewModel(reminderRepository)
 
@@ -130,7 +135,23 @@ class CreateReminderViewModelTest {
         vm.saveReminder()
 
         val saved = reminderRepository.reminders.value.first()
-        assertNull(saved.medicineName)
-        assertNull(saved.dosage)
+        assertTrue(saved.medications.isEmpty())
+        assertNull(saved.recurrence)
+    }
+
+    @Test
+    fun `monthly type with recurrence saved`() = runTest {
+        val reminderRepository = FakeReminderRepository()
+        val vm = newViewModel(reminderRepository)
+
+        vm.updateTitle("Rent")
+        vm.updateType(ReminderType.MONTHLY)
+        vm.updateAmount("1200")
+        vm.selectRecurrence(RecurrenceRule(RecurrenceUnit.MONTHLY, 1))
+        vm.saveReminder()
+
+        val saved = reminderRepository.reminders.value.first()
+        assertEquals(1200.0, saved.amount!!, 0.0)
+        assertEquals(RecurrenceUnit.MONTHLY, saved.recurrence?.unit)
     }
 }

@@ -71,6 +71,15 @@ fun ReminderCard(
                     }
                 }
 
+                reminder.recurrence?.let {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "RECURS · ${it.label.uppercase()}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
@@ -88,16 +97,20 @@ fun ReminderCard(
                     )
                 }
 
-                if (reminder.type == ReminderType.MEDICAL && reminder.medicineName != null) {
-                    Text(
-                        text = "${reminder.medicineName}${reminder.dosage?.let { " · $it" } ?: ""}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                    reminder.instructions?.let {
-                        if (it.isNotBlank()) {
+                if (reminder.type == ReminderType.MEDICAL && reminder.medications.isNotEmpty()) {
+                    reminder.medications.forEach { med ->
+                        val line = buildString {
+                            append(med.name)
+                            if (med.dosage.isNotBlank()) append(" · ").append(med.dosage)
+                        }
+                        Text(
+                            text = line,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        if (med.instructions.isNotBlank()) {
                             Text(
-                                text = it,
+                                text = med.instructions,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

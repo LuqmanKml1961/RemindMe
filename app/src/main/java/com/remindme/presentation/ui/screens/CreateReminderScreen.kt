@@ -13,10 +13,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.remindme.domain.model.Medication
+import com.remindme.domain.model.RecurrenceRule
+import com.remindme.domain.model.RecurrenceUnit
 import com.remindme.domain.model.ReminderType
 import com.remindme.presentation.ui.components.BrutButton
 import com.remindme.presentation.ui.components.BrutChip
 import com.remindme.presentation.ui.components.BrutOutlinedButton
+import com.remindme.presentation.ui.components.BrutPass
 import com.remindme.presentation.ui.components.SectionHeader
 import com.remindme.presentation.ui.components.loudDateTime
 import com.remindme.presentation.viewmodel.CreateReminderViewModel
@@ -106,27 +110,31 @@ fun CreateReminderScreen(
 
             // Medical-specific fields
             if (uiState.type == ReminderType.MEDICAL) {
-                OutlinedTextField(
-                    value = uiState.medicineName,
-                    onValueChange = viewModel::updateMedicineName,
-                    label = { Text("MEDICINE NAME") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                SectionHeader(title = "Medications")
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = uiState.dosage,
-                    onValueChange = viewModel::updateDosage,
-                    label = { Text("DOSAGE (E.G. 1 PILL DAILY)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = uiState.instructions,
-                    onValueChange = viewModel::updateInstructions,
-                    label = { Text("SPECIAL INSTRUCTIONS") },
-                    singleLine = true,
+
+                if (uiState.medications.isEmpty()) {
+                    Text(
+                        text = "Tap below to add a medicine.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                uiState.medications.forEachIndexed { index, med ->
+                    MedicationEditorRow(
+                        med = med,
+                        onNameChange = { viewModel.updateMedicationName(index, it) },
+                        onDosageChange = { viewModel.updateMedicationDosage(index, it) },
+                        onInstructionsChange = { viewModel.updateMedicationInstructions(index, it) },
+                        onRemove = { viewModel.removeMedication(index) }
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
+                BrutOutlinedButton(
+                    text = "+ Add medication",
+                    onClick = viewModel::addMedication,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -142,15 +150,6 @@ fun CreateReminderScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = uiState.recurrenceDays,
-                    onValueChange = viewModel::updateRecurrenceDays,
-                    label = { Text("RECUR EVERY (DAYS)") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -159,6 +158,15 @@ fun CreateReminderScreen(
                 onQuick = viewModel::applyQuickPreset,
                 onShowCustom = { showWhenDialog = true },
                 onClear = { viewModel.updateDueDate(null) }
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            RecurrenceSection(
+                recurrence = uiState.recurrence,
+                everyNDaysText = uiState.everyNDaysText,
+                onSelect = viewModel::selectRecurrence,
+                onEveryNDaysChange = viewModel::updateEveryNDays
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -241,6 +249,118 @@ private fun TypeSelector(
                 modifier = Modifier.weight(1f)
             )
         }
+    }
+}
+
+@Composable
+private fun MedicationEditorRow(
+    med: Medication,
+    onNameChange: (String) -> Unit,
+    onDosageChange: (String) -> Unit,
+    onInstructionsChange: (String) -> Unit,
+    onRemove: () -> Unit
+) {
+    BrutPass(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            OutlinedTextField(
+                value = med.name,
+                onValueChange = onNameChange,
+                label = { Text("MEDICINE NAME") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = med.dosage,
+                onValueChange = onDosageChange,
+                label = { Text("DOSAGE (E.G. 1 PILL DAILY)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = med.instructions,
+                onValueChange = onInstructionsChange,
+                label = { Text("INSTRUCTIONS (E.G. TAKE WITH FOOD)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onRemove) {
+                    Text(
+                        text = "REMOVE",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecurrenceSection(
+    recurrence: RecurrenceRule?,
+    everyNDaysText: String,
+    onSelect: (RecurrenceUnit?) -> Unit,
+    onEveryNDaysChange: (String) -> Unit
+) {
+    SectionHeader(title = "Repeat")
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        BrutChip("Once", Modifier.weight(1f), selected = recurrence == null) { onSelect(null) }
+        BrutChip(
+            "Daily",
+            Modifier.weight(1f),
+            selected = recurrence?.unit == RecurrenceUnit.DAILY
+        ) { onSelect(RecurrenceUnit.DAILY) }
+        BrutChip(
+            "Weekly",
+            Modifier.weight(1f),
+            selected = recurrence?.unit == RecurrenceUnit.WEEKLY
+        ) { onSelect(RecurrenceUnit.WEEKLY) }
+        BrutChip(
+            "Monthly",
+            Modifier.weight(1f),
+            selected = recurrence?.unit == RecurrenceUnit.MONTHLY
+        ) { onSelect(RecurrenceUnit.MONTHLY) }
+    }
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        BrutChip(
+            "Yearly",
+            Modifier.weight(1f),
+            selected = recurrence?.unit == RecurrenceUnit.YEARLY
+        ) { onSelect(RecurrenceUnit.YEARLY) }
+        BrutChip(
+            "Every N days",
+            Modifier.weight(1f),
+            selected = recurrence?.unit == RecurrenceUnit.EVERY_N_DAYS
+        ) { onSelect(RecurrenceUnit.EVERY_N_DAYS) }
+    }
+
+    if (recurrence?.unit == RecurrenceUnit.EVERY_N_DAYS) {
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = everyNDaysText,
+            onValueChange = onEveryNDaysChange,
+            label = { Text("EVERY HOW MANY DAYS?") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

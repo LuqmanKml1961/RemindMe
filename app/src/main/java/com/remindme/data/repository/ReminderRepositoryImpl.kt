@@ -36,11 +36,19 @@ class ReminderRepositoryImpl @Inject constructor(
     }
 
     override suspend fun insertReminder(reminder: Reminder): Long {
-        return reminderDao.insertReminder(reminder.toEntity())
+        val id = reminderDao.insertReminder(reminder.toEntity())
+        if (reminder.medications.isNotEmpty()) {
+            reminderDao.insertMedications(reminder.medications.map { it.toEntity(id) })
+        }
+        return id
     }
 
     override suspend fun updateReminder(reminder: Reminder) {
         reminderDao.updateReminder(reminder.toEntity())
+        reminderDao.deleteMedications(reminder.id)
+        if (reminder.medications.isNotEmpty()) {
+            reminderDao.insertMedications(reminder.medications.map { it.toEntity(reminder.id) })
+        }
     }
 
     override suspend fun deleteReminder(id: Long) {

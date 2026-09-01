@@ -6,16 +6,16 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE is_archived = 0 ORDER BY created_at DESC")
-    fun getAllReminders(): Flow<List<ReminderEntity>>
+    fun getAllReminders(): Flow<List<ReminderWithMeds>>
 
     @Query("SELECT * FROM reminders WHERE type = :type AND is_archived = 0 ORDER BY created_at DESC")
-    fun getRemindersByType(type: String): Flow<List<ReminderEntity>>
+    fun getRemindersByType(type: String): Flow<List<ReminderWithMeds>>
 
     @Query("SELECT * FROM reminders WHERE id = :id")
-    fun getReminderById(id: Long): Flow<ReminderEntity?>
+    fun getReminderById(id: Long): Flow<ReminderWithMeds?>
 
     @Query("SELECT * FROM reminders WHERE share_id = :shareId")
-    fun getReminderByShareId(shareId: String): Flow<ReminderEntity?>
+    fun getReminderByShareId(shareId: String): Flow<ReminderWithMeds?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReminder(reminder: ReminderEntity): Long
@@ -36,8 +36,15 @@ interface ReminderDao {
     suspend fun deleteCompletedReminders()
 
     @Query("SELECT * FROM reminders WHERE is_completed = 1")
-    suspend fun getCompletedReminders(): List<ReminderEntity>
+    suspend fun getCompletedReminders(): List<ReminderWithMeds>
 
     @Query("SELECT * FROM reminders WHERE due_date IS NOT NULL AND is_completed = 0 AND is_archived = 0")
-    suspend fun getAllScheduledReminders(): List<ReminderEntity>
+    suspend fun getAllScheduledReminders(): List<ReminderWithMeds>
+
+    // Medications
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMedications(medications: List<MedicationEntity>)
+
+    @Query("DELETE FROM medications WHERE reminder_id = :reminderId")
+    suspend fun deleteMedications(reminderId: Long)
 }

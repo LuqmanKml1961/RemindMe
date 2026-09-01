@@ -4,6 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.remindme.data.local.AlarmScheduler
+import com.remindme.domain.model.Medication
+import com.remindme.domain.model.RecurrenceRule
+import com.remindme.domain.model.RecurrenceUnit
 import com.remindme.domain.model.Reminder
 import com.remindme.domain.model.ReminderType
 import com.remindme.domain.model.TodoItem
@@ -25,11 +28,10 @@ data class CreateReminderUiState(
     val dueDate: LocalDateTime? = null,
     val autoDelete: Boolean = false,
     val alsoAddTodo: Boolean = false,
-    val medicineName: String = "",
-    val dosage: String = "",
-    val instructions: String = "",
+    val medications: List<Medication> = emptyList(),
     val amount: String = "",
-    val recurrenceDays: String = "",
+    val recurrence: RecurrenceRule? = null,
+    val everyNDaysText: String = "",
     val isEditing: Boolean = false,
     val editingId: Long = 0L,
     val isValid: Boolean = false,
@@ -65,11 +67,12 @@ class CreateReminderViewModel @Inject constructor(
                     type = r.type,
                     dueDate = r.dueDate,
                     autoDelete = r.autoDelete,
-                    medicineName = r.medicineName ?: "",
-                    dosage = r.dosage ?: "",
-                    instructions = r.instructions ?: "",
+                    medications = r.medications,
                     amount = r.amount?.toString() ?: "",
-                    recurrenceDays = r.recurrenceDays?.toString() ?: "",
+                    recurrence = r.recurrence,
+                    everyNDaysText =
+                        r.recurrence?.takeIf { it.unit == RecurrenceUnit.EVERY_N_DAYS }?.interval?.toString()
+                            ?: "",
                     isEditing = true,
                     editingId = r.id,
                     isValid = true
@@ -124,24 +127,76 @@ class CreateReminderViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(alsoAddTodo = alsoAddTodo)
     }
 
-    fun updateMedicineName(name: String) {
-        _uiState.value = _uiState.value.copy(medicineName = name)
+    fun addMedication() {
+        _uiState.value = _uiState.value.copy(medications = _uiState.value.medications + Medication())
     }
 
-    fun updateDosage(dosage: String) {
-        _uiState.value = _uiState.value.copy(dosage = dosage)
+    fun updateMedicationName(index: Int, name: String) {
+        _uiState.value = _uiState.value.copy(
+            medications = _uiState.value.medications.mapIndexed { i, med ->
+                if (i == index) med.copy(name = name) else med
+            }
+        )
     }
 
-    fun updateInstructions(instructions: String) {
-        _uiState.value = _uiState.value.copy(instructions = instructions)
+    fun updateMedicationDosage(index: Int, dosage: String) {
+        _uiState.value = _uiState.value.copy(
+            medications = _uiState.value.medications.mapIndexed { i, med ->
+                if (i == index) med.copy(dosage = dosage) else med
+            }
+        )
+    }
+
+    fun updateMedicationInstructions(index: Int, instructions: String) {
+        _uiState.value = _uiState.value.copy(
+            medications = _uiState.value.medications.mapIndexed { i, med ->
+                if (i == index) med.copy(instructions = instructions) else med
+            }
+        )
+    }
+
+    fun removeMedication(index: Int) {
+        _uiState.value = _uiState.value.copy(
+            medications = _uiState.value.medications.filterIndexed { i, _ -> i != index }
+        )
     }
 
     fun updateAmount(amount: String) {
         _uiState.value = _uiState.value.copy(amount = amount)
     }
 
-    fun updateRecurrenceDays(days: String) {
-        _uiState.value = _uiState.value.copy(recurrenceDays = days)
+    fun selectRecurrence(unit: RecurrenceUnit?) {
+        val state = _uiState.value
+        val recurrence = when (unit) {
+            null, RecurrenceUnit.EVERY_N_DAYS -> null
+            else -> RecurrenceRule(unit)
+        }
+        _uiState.value = if (recurrence == null) {
+            if (unit == RecurrenceUnit.EVERY_N_DAYS) {
+                state.copy(
+                    recurrence = RecurrenceRule(
+                        RecurrenceUnit.EVERY_N_DAYS,
+                        state.everyNDaysText.toIntOrNull()?.takeIf { it > 0 } ?: 1
+                    )
+                )
+            } else {
+                state.copy(recurrence = null)
+            }
+        } else {
+            state.copy(recurrence = recurrence)
+        }
+    }
+
+    fun updateEveryNDays(text: String) {
+        val state = _uiState.value
+        val interval = text.toIntOrNull()?.takeIf { it > 0 } ?: 1
+        val newText = text.filter { it.isDigit() }.take(3)
+        _uiState.value = state.copy(
+            everyNDaysText = newText,
+            recurrence = state.recurrence?.takeIf { it.unit == RecurrenceUnit.EVERY_N_DAYS }
+                ?.copy(interval = interval)
+                ?: state.recurrence
+        )
     }
 
     fun saveReminder() {
@@ -170,6 +225,20 @@ class CreateReminderViewModel @Inject constructor(
     }
 
     private fun buildReminder(state: CreateReminderUiState): Reminder {
+        val medications = if (state.type == ReminderType.MEDICAL) {
+            state.medications
+                .map { it.copy(name = it.name.trim()) }
+                .filter { it.name.isNotBlank() }
+        } else {
+            emptyList()
+        }
+        val recurrence = state.recurrence?.let {
+            if (it.unit == RecurrenceUnit.EVERY_N_DAYS) {
+                it.copy(interval = it.interval.coerceAtLeast(1))
+            } else {
+                it
+            }
+        }
         return Reminder(
             id = if (state.isEditing) state.editingId else 0L,
             title = state.title,
@@ -177,11 +246,9 @@ class CreateReminderViewModel @Inject constructor(
             type = state.type,
             dueDate = state.dueDate,
             autoDelete = state.autoDelete,
-            medicineName = if (state.type == ReminderType.MEDICAL) state.medicineName.ifBlank { null } else null,
-            dosage = if (state.type == ReminderType.MEDICAL) state.dosage.ifBlank { null } else null,
-            instructions = if (state.type == ReminderType.MEDICAL) state.instructions.ifBlank { null } else null,
+            medications = medications,
             amount = if (state.type == ReminderType.MONTHLY) state.amount.toDoubleOrNull() else null,
-            recurrenceDays = if (state.type == ReminderType.MONTHLY) state.recurrenceDays.toIntOrNull() else null
+            recurrence = recurrence
         )
     }
 
@@ -196,11 +263,9 @@ class CreateReminderViewModel @Inject constructor(
             type = draft.type,
             dueDate = draft.dueDate,
             autoDelete = draft.autoDelete,
-            medicineName = draft.medicineName,
-            dosage = draft.dosage,
-            instructions = draft.instructions,
+            medications = draft.medications,
             amount = draft.amount,
-            recurrenceDays = draft.recurrenceDays
+            recurrence = draft.recurrence
         ) ?: draft
     }
 }

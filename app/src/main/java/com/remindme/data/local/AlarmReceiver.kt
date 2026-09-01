@@ -8,6 +8,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.remindme.R
 import com.remindme.RemindMeApp
+import com.remindme.domain.model.RecurrenceRule
+import com.remindme.domain.model.RecurrenceUnit
 import com.remindme.domain.model.Reminder
 import com.remindme.domain.repository.ReminderRepository
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,14 +40,15 @@ class AlarmReceiver : BroadcastReceiver() {
         val dueMillis = intent.getLongExtra(EXTRA_DUE_MILLIS, 0L)
         val title = intent.getStringExtra(EXTRA_REMINDER_TITLE) ?: "Reminder"
         val description = intent.getStringExtra(EXTRA_REMINDER_DESCRIPTION)?.takeIf { it.isNotBlank() }
+        val recurrence = RecurrenceRule.fromStorage(intent.getStringExtra(EXTRA_RECURRENCE_RULE))
 
         showNotification(context, reminderId, title, description, dueMillis)
 
-        if (recurrenceDays > 0 && dueMillis > 0) {
+        if (recurrence != null && dueMillis > 0) {
             val result = goAsync()
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    rescheduleRecurring(reminderId, recurrenceDays, dueMillis)
+                    rescheduleRecurring(reminderId, recurrence, dueMillis)
                 } finally {
                     result.finish()
                 }
@@ -53,14 +56,18 @@ class AlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    private suspend fun rescheduleRecurring(reminderId: Long, recurrenceDays: Int, lastDueMillis: Long) {
+    private suspend fun rescheduleRecurring(
+        reminderId: Long,
+        recurrence: RecurrenceRule,
+        lastDueMillis: Long
+    ) {
         val reminder = repository.getReminderById(reminderId).first()
             ?: return
 
-        val nextDue = LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(lastDueMillis),
-            ZoneId.systemDefault()
-        ).plusDays(recurrenceDays.toLong())
+        val nextDue = computeNextDue(
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(lastDueMillis), ZoneId.systemDefault()),
+            recurrence
+        )
 
         val updated = reminder.copy(
             dueDate = nextDue,
@@ -69,6 +76,16 @@ class AlarmReceiver : BroadcastReceiver() {
         )
         repository.updateReminder(updated)
         alarmScheduler.schedule(updated)
+    }
+
+    private fun computeNextDue(lastDue: LocalDateTime, rule: RecurrenceRule): LocalDateTime {
+        return when (rule.unit) {
+            RecurrenceUnit.DAILY -> lastDue.plusDays(1)
+            RecurrenceUnit.WEEKLY -> lastDue.plusWeeks(1)
+            RecurrenceUnit.MONTHLY -> lastDue.plusMonths(1)
+            RecurrenceUnit.YEARLY -> lastDue.plusYears(1)
+            RecurrenceUnit.EVERY_N_DAYS -> lastDue.plusDays(rule.interval.toLong())
+        }
     }
 
     private fun showNotification(
@@ -128,6 +145,7 @@ class AlarmReceiver : BroadcastReceiver() {
         const val EXTRA_REMINDER_TITLE = "reminder_title"
         const val EXTRA_REMINDER_DESCRIPTION = "reminder_description"
         const val EXTRA_RECURRENCE_DAYS = "recurrence_days"
+        const val EXTRA_RECURRENCE_RULE = "recurrence_rule"
         const val EXTRA_DUE_MILLIS = "due_millis"
     }
 }

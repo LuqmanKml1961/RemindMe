@@ -3,6 +3,7 @@ package com.remindme.presentation.navigation
 sealed class Screen(val route: String) {
     data object HomeScreen : Screen("home")
     data object TodoScreen : Screen("todo")
+    data object VaultScreen : Screen("vault")
     data object SettingsScreen : Screen("settings")
 
     data object CreateReminderScreen : Screen("create_reminder?presetMin={presetMin}") {

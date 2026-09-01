@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.remindme.data.local.AppDatabase
 import com.remindme.data.local.ReminderDao
 import com.remindme.data.local.TodoDao
+import com.remindme.data.local.VaultDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,7 +24,7 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             AppDatabase.DATABASE_NAME
-        ).build()
+        ).addMigrations(AppDatabase.MIGRATION_1_2).build()
     }
 
     @Provides
@@ -34,5 +35,10 @@ object DatabaseModule {
     @Provides
     fun provideTodoDao(database: AppDatabase): TodoDao {
         return database.todoDao()
+    }
+
+    @Provides
+    fun provideVaultDao(database: AppDatabase): VaultDao {
+        return database.vaultDao()
     }
 }
