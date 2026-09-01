@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -117,11 +116,17 @@ fun ReminderCard(
 
             HorizontalDivider(thickness = 1.dp, color = onSurface)
 
-            Row(modifier = Modifier.fillMaxWidth()) {
-                ActionCell("DONE", Modifier.weight(1f)) { onComplete(reminder.id) }
-                ActionCell("EDIT", Modifier.weight(1f)) { onEdit(reminder.id) }
-                ActionCell("SHARE", Modifier.weight(1f)) { onShare(reminder) }
-                ActionCell("DELETE", Modifier.weight(1f), danger = true) { onDelete(reminder.id) }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(onSurface)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    ActionCell("DONE", Modifier.weight(1f)) { onComplete(reminder.id) }
+                    ActionCell("EDIT", Modifier.weight(1f)) { onEdit(reminder.id) }
+                    ActionCell("SHARE", Modifier.weight(1f)) { onShare(reminder) }
+                    ActionCell("DELETE", Modifier.weight(1f), danger = true) { onDelete(reminder.id) }
+                }
             }
         }
     }
@@ -134,15 +139,15 @@ private fun ActionCell(
     danger: Boolean = false,
     onClick: () -> Unit
 ) {
-    val onSurface = MaterialTheme.colorScheme.onSurface
     val tint = when {
         danger -> MaterialTheme.colorScheme.error
         label == "DONE" -> MaterialTheme.colorScheme.primary
-        else -> onSurface
+        else -> MaterialTheme.colorScheme.onSurface
     }
     Box(
         modifier = modifier
-            .border(start = BorderStroke(1.dp, onSurface))
+            .padding(1.dp)
+            .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick)
             .padding(vertical = 10.dp),
         contentAlignment = Alignment.Center

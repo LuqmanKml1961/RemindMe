@@ -132,7 +132,8 @@ private fun HomeHeader(
     val onSurface = MaterialTheme.colorScheme.onSurface
     val background = MaterialTheme.colorScheme.background
     val todayLabel = LocalDateTime.now()
-        .format(DateTimeFormatter.ofPattern("EEE, MMM d").uppercase())
+        .format(DateTimeFormatter.ofPattern("EEE, MMM d"))
+        .uppercase()
 
     Row(
         modifier = Modifier
