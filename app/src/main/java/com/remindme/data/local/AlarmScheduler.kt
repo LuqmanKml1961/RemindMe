@@ -6,13 +6,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.remindme.domain.model.Reminder
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AlarmScheduler @Inject constructor(
-    context: Context
+    @ApplicationContext context: Context
 ) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private val appContext = context.applicationContext
