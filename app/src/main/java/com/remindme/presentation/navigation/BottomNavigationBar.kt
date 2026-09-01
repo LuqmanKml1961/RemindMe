@@ -104,17 +104,17 @@ fun MainScaffold(
                         // Square add button
                         Box(
                             modifier = Modifier
-                                .padding(horizontal = 10.dp)
-                                .size(44.dp)
-                                .background(onSurface)
-                                .clickable(onClick = onAddClick),
+.padding(horizontal = 10.dp)
+                            .size(48.dp)
+                            .background(onSurface)
+                            .clickable(onClick = onAddClick),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Add,
                                 contentDescription = "Create reminder",
                                 tint = background,
-                                modifier = Modifier.size(26.dp)
+                                modifier = Modifier.size(28.dp)
                             )
                         }
                     }

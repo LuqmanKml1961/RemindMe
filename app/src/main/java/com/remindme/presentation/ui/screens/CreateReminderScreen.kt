@@ -75,7 +75,7 @@ fun CreateReminderScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
             // Title
             OutlinedTextField(
@@ -102,7 +102,7 @@ fun CreateReminderScreen(
 
             TypeSelector(selected = uiState.type, onSelect = viewModel::updateType)
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Medical-specific fields
             if (uiState.type == ReminderType.MEDICAL) {
@@ -161,7 +161,7 @@ fun CreateReminderScreen(
                 onClear = { viewModel.updateDueDate(null) }
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -202,7 +202,7 @@ fun CreateReminderScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 

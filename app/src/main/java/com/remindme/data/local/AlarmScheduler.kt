@@ -50,6 +50,7 @@ class AlarmScheduler @Inject constructor(
         val intent = Intent(appContext, AlarmReceiver::class.java).apply {
             putExtra(AlarmReceiver.EXTRA_REMINDER_ID, reminder.id)
             putExtra(AlarmReceiver.EXTRA_REMINDER_TITLE, reminder.title)
+            putExtra(AlarmReceiver.EXTRA_REMINDER_DESCRIPTION, reminder.description.orEmpty())
             putExtra(AlarmReceiver.EXTRA_RECURRENCE_DAYS, reminder.recurrenceDays ?: 0)
             putExtra(
                 AlarmReceiver.EXTRA_DUE_MILLIS,

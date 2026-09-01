@@ -36,7 +36,7 @@ fun ReminderCard(
     BrutCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         shadow = !isDone,
         containerColor = container
     ) {
@@ -49,7 +49,7 @@ fun ReminderCard(
                     .background(if (isOverdue) AccentAmber else accent)
             )
 
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(14.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TypeTag(type = reminder.type)
                     Spacer(modifier = Modifier.width(8.dp))

@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import com.remindme.domain.model.ReminderType
 import com.remindme.presentation.ui.theme.AccentBlue
 import com.remindme.presentation.ui.theme.AccentRed
-import com.remindme.presentation.ui.theme.Ink
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -134,6 +134,7 @@ fun BrutButton(
         modifier = modifier,
         enabled = enabled,
         shape = RoundedCornerShape(0.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = onSurface,
             contentColor = background,
@@ -168,6 +169,7 @@ fun BrutOutlinedButton(
         modifier = modifier,
         enabled = enabled,
         shape = RoundedCornerShape(0.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = surface,
             contentColor = onSurface,
@@ -203,10 +205,12 @@ fun BrutChip(
     val surface = MaterialTheme.colorScheme.surface
     Box(
         modifier = modifier
+            .height(40.dp)
             .background(if (selected) onSurface else surface)
             .border(1.dp, onSurface)
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 9.dp)
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = text.uppercase(),
@@ -244,7 +248,7 @@ fun SectionHeader(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         HorizontalDivider(
             thickness = 2.dp,
             color = MaterialTheme.colorScheme.onSurface
@@ -263,7 +267,7 @@ fun StatBox(
     accent: Color = MaterialTheme.colorScheme.onSurface
 ) {
     BrutCard(modifier = modifier, shadow = false) {
-        Column(modifier = Modifier.padding(10.dp)) {
+        Column(modifier = Modifier.padding(12.dp)) {
             Text(
                 text = value,
                 style = MaterialTheme.typography.displaySmall,
@@ -287,14 +291,15 @@ fun TypeTag(
     type: ReminderType,
     modifier: Modifier = Modifier
 ) {
-    val accent: Color = when (type) {
-        ReminderType.MEDICAL -> AccentRed
-        ReminderType.MONTHLY -> AccentBlue
-        ReminderType.GENERAL -> Ink
+    val (chipBg, chipFg) = when (type) {
+        ReminderType.MEDICAL -> AccentRed to Color.White
+        ReminderType.MONTHLY -> AccentBlue to Color.White
+        ReminderType.GENERAL ->
+            MaterialTheme.colorScheme.onSurface to MaterialTheme.colorScheme.surface
     }
     Box(
         modifier = modifier
-            .background(accent)
+            .background(chipBg)
             .padding(horizontal = 6.dp, vertical = 2.dp)
     ) {
         Text(
@@ -304,7 +309,7 @@ fun TypeTag(
                 ReminderType.GENERAL -> "GEN"
             },
             style = MaterialTheme.typography.labelSmall,
-            color = Color.White,
+            color = chipFg,
             fontWeight = FontWeight.Bold
         )
     }
@@ -313,8 +318,9 @@ fun TypeTag(
 // ----------------------------------------------------------
 // ReminderType accent color (shared with cards/headers)
 // ----------------------------------------------------------
+@Composable
 fun typeAccent(type: ReminderType): Color = when (type) {
     ReminderType.MEDICAL -> AccentRed
     ReminderType.MONTHLY -> AccentBlue
-    ReminderType.GENERAL -> Ink
+    ReminderType.GENERAL -> MaterialTheme.colorScheme.onSurface
 }

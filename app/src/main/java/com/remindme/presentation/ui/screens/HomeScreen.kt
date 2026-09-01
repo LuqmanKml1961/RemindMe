@@ -63,7 +63,7 @@ fun HomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 StatBox(
@@ -94,7 +94,7 @@ fun HomeScreen(
             SectionHeader(
                 title = "Reminders",
                 trailing = "${active.size} ACTIVE",
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 20.dp)
             )
         }
 
@@ -138,7 +138,7 @@ private fun HomeHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 16.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
@@ -156,7 +156,7 @@ private fun HomeHeader(
 
         Box(
             modifier = Modifier
-                .size(54.dp)
+                .size(48.dp)
                 .background(onSurface)
                 .clickable(onClick = onAddClick),
             contentAlignment = Alignment.Center
@@ -165,7 +165,7 @@ private fun HomeHeader(
                 imageVector = Icons.Filled.Add,
                 contentDescription = "Create reminder",
                 tint = background,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(28.dp)
             )
         }
     }
@@ -176,13 +176,14 @@ private fun QuickRemindRow(onQuickCreate: (Int) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .padding(horizontal = 20.dp, vertical = 14.dp)
     ) {
         Text(
             text = "QUICK REMIND",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -199,7 +200,7 @@ private fun HowToGuide(onAddClick: () -> Unit) {
     BrutPass(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 20.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(

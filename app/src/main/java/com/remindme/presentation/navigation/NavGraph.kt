@@ -1,5 +1,9 @@
 package com.remindme.presentation.navigation
 
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -23,7 +27,19 @@ fun NavGraph(
     NavHost(
         navController = navController,
         startDestination = Screen.HomeScreen.route,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = {
+            fadeIn(animationSpec = tween(200, easing = LinearOutSlowInEasing))
+        },
+        exitTransition = {
+            fadeOut(animationSpec = tween(150, easing = LinearOutSlowInEasing))
+        },
+        popEnterTransition = {
+            fadeIn(animationSpec = tween(200, easing = LinearOutSlowInEasing))
+        },
+        popExitTransition = {
+            fadeOut(animationSpec = tween(150, easing = LinearOutSlowInEasing))
+        }
     ) {
         composable(Screen.HomeScreen.route) {
             HomeScreen(

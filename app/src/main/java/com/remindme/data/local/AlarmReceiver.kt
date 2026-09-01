@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -36,8 +37,9 @@ class AlarmReceiver : BroadcastReceiver() {
         val recurrenceDays = intent.getIntExtra(EXTRA_RECURRENCE_DAYS, 0)
         val dueMillis = intent.getLongExtra(EXTRA_DUE_MILLIS, 0L)
         val title = intent.getStringExtra(EXTRA_REMINDER_TITLE) ?: "Reminder"
+        val description = intent.getStringExtra(EXTRA_REMINDER_DESCRIPTION)?.takeIf { it.isNotBlank() }
 
-        showNotification(context, reminderId, title)
+        showNotification(context, reminderId, title, description, dueMillis)
 
         if (recurrenceDays > 0 && dueMillis > 0) {
             val result = goAsync()
@@ -69,7 +71,13 @@ class AlarmReceiver : BroadcastReceiver() {
         alarmScheduler.schedule(updated)
     }
 
-    private fun showNotification(context: Context, reminderId: Long, title: String) {
+    private fun showNotification(
+        context: Context,
+        reminderId: Long,
+        title: String,
+        description: String?,
+        dueMillis: Long
+    ) {
         val contentIntent = Intent(context, com.remindme.presentation.MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -80,11 +88,33 @@ class AlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val dueTime = if (dueMillis > 0) {
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(dueMillis), ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("h:mm a"))
+        } else {
+            null
+        }
+
+        val body = buildString {
+            append("Your reminder is due")
+            dueTime?.let { append(" at $it") }
+        }
+
+        val style = NotificationCompat.BigTextStyle().bigText(
+            buildString {
+                append("\u201C$title\u201D")
+                if (description != null) append("\n\n$description")
+                if (dueTime != null) append("\nTime: $dueTime")
+            }
+        )
+
         val notification = NotificationCompat.Builder(context, RemindMeApp.CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(title)
-            .setContentText("Your reminder is due")
+            .setContentTitle("\u201C$title\u201D")
+            .setContentText(body)
+            .setStyle(style)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
@@ -96,6 +126,7 @@ class AlarmReceiver : BroadcastReceiver() {
     companion object {
         const val EXTRA_REMINDER_ID = "reminder_id"
         const val EXTRA_REMINDER_TITLE = "reminder_title"
+        const val EXTRA_REMINDER_DESCRIPTION = "reminder_description"
         const val EXTRA_RECURRENCE_DAYS = "recurrence_days"
         const val EXTRA_DUE_MILLIS = "due_millis"
     }
