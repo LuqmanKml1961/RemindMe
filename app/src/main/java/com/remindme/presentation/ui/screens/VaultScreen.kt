@@ -98,13 +98,21 @@ fun VaultScreen(
                 Modifier.weight(1f),
                 selected = uiState.filter == null
             ) { viewModel.setFilter(null) }
-            VaultCategory.entries.forEach { category ->
-                BrutChip(
-                    catShortLabel(category),
-                    Modifier.weight(1f),
-                    selected = uiState.filter == category
-                ) { viewModel.setFilter(category) }
-            }
+            BrutChip(
+                catShortLabel(VaultCategory.PEOPLE),
+                Modifier.weight(1f),
+                selected = uiState.filter == VaultCategory.PEOPLE
+            ) { viewModel.setFilter(VaultCategory.PEOPLE) }
+            BrutChip(
+                catShortLabel(VaultCategory.HOME_VEHICLE),
+                Modifier.weight(1f),
+                selected = uiState.filter == VaultCategory.HOME_VEHICLE
+            ) { viewModel.setFilter(VaultCategory.HOME_VEHICLE) }
+            BrutChip(
+                catShortLabel(VaultCategory.PROPERTY),
+                Modifier.weight(1f),
+                selected = uiState.filter == VaultCategory.PROPERTY
+            ) { viewModel.setFilter(VaultCategory.PROPERTY) }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -288,6 +296,6 @@ private fun VaultEditorDialog(
 
 private fun catShortLabel(category: VaultCategory): String = when (category) {
     VaultCategory.PEOPLE -> "People"
-    VaultCategory.HOME_VEHICLE -> "Home VEH"
+    VaultCategory.HOME_VEHICLE -> "Vehicle"
     VaultCategory.PROPERTY -> "Property"
 }

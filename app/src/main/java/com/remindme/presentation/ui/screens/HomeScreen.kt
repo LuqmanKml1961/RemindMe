@@ -22,7 +22,6 @@ import com.remindme.presentation.ui.theme.AccentAmber
 import com.remindme.presentation.ui.theme.AccentGreen
 import com.remindme.presentation.viewmodel.HomeViewModel
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -44,9 +43,18 @@ fun HomeScreen(
     }
 
     val today = LocalDate.now()
-    val active = uiState.reminders.filter { !it.isCompleted && !it.isArchived }
-    val dueToday = active.count { it.dueDate?.toLocalDate() == today }
-    val doneCount = uiState.reminders.count { it.isCompleted }
+    val active = remember(uiState.reminders) {
+        uiState.reminders.filter { !it.isCompleted && !it.isArchived }
+    }
+    val dueToday = remember(uiState.reminders, today) {
+        active.count { it.dueDate?.toLocalDate() == today }
+    }
+    val doneCount = remember(uiState.reminders) {
+        uiState.reminders.count { it.isCompleted }
+    }
+    val todayLabel = remember(today) {
+        today.format(DateTimeFormatter.ofPattern("EEE, MMM d")).uppercase()
+    }
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -55,6 +63,7 @@ fun HomeScreen(
         item(key = "header") {
             HomeHeader(
                 activeCount = active.size,
+                todayLabel = todayLabel,
                 onAddClick = onAddClick
             )
         }
@@ -127,13 +136,11 @@ fun HomeScreen(
 @Composable
 private fun HomeHeader(
     activeCount: Int,
+    todayLabel: String,
     onAddClick: () -> Unit
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     val background = MaterialTheme.colorScheme.background
-    val todayLabel = LocalDateTime.now()
-        .format(DateTimeFormatter.ofPattern("EEE, MMM d"))
-        .uppercase()
 
     Row(
         modifier = Modifier
