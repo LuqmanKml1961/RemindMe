@@ -1,27 +1,27 @@
 package com.remindme.presentation.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.TimePicker
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.remindme.domain.model.ReminderType
+import com.remindme.presentation.ui.components.BrutButton
+import com.remindme.presentation.ui.components.BrutChip
+import com.remindme.presentation.ui.components.BrutOutlinedButton
+import com.remindme.presentation.ui.components.SectionHeader
+import com.remindme.presentation.ui.components.loudDateTime
 import com.remindme.presentation.viewmodel.CreateReminderViewModel
+import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -30,11 +30,16 @@ import java.time.ZoneId
 fun CreateReminderScreen(
     reminderId: Long?,
     onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    presetMinutes: Int? = null,
     viewModel: CreateReminderViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
+    var showWhenDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        presetMinutes?.let(viewModel::applyQuickPreset)
+    }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
@@ -43,21 +48,30 @@ fun CreateReminderScreen(
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
-                    Text(if (uiState.isEditing) "Edit Reminder" else "New Reminder")
+                    Text(
+                        text = if (uiState.isEditing) "EDIT REMINDER" else "NEW REMINDER",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface, thickness = 2.dp)
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
@@ -67,7 +81,7 @@ fun CreateReminderScreen(
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = viewModel::updateTitle,
-                label = { Text("Title *") },
+                label = { Text("TITLE *") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -78,43 +92,24 @@ fun CreateReminderScreen(
             OutlinedTextField(
                 value = uiState.description,
                 onValueChange = viewModel::updateDescription,
-                label = { Text("Description") },
+                label = { Text("DESCRIPTION") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2,
                 maxLines = 4
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Type selector
-            Text(
-                text = "Reminder Type",
-                style = MaterialTheme.typography.titleLarge
-            )
+            TypeSelector(selected = uiState.type, onSelect = viewModel::updateType)
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Type selection buttons
-            ReminderType.values().forEach { type ->
-                val isSelected = uiState.type == type
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { viewModel.updateType(type) },
-                    label = { Text(type.name) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 2.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Medical-specific fields
             if (uiState.type == ReminderType.MEDICAL) {
                 OutlinedTextField(
                     value = uiState.medicineName,
                     onValueChange = viewModel::updateMedicineName,
-                    label = { Text("Medicine Name") },
+                    label = { Text("MEDICINE NAME") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -122,7 +117,7 @@ fun CreateReminderScreen(
                 OutlinedTextField(
                     value = uiState.dosage,
                     onValueChange = viewModel::updateDosage,
-                    label = { Text("Dosage (e.g., 1 pill daily)") },
+                    label = { Text("DOSAGE (E.G. 1 PILL DAILY)") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -130,7 +125,7 @@ fun CreateReminderScreen(
                 OutlinedTextField(
                     value = uiState.instructions,
                     onValueChange = viewModel::updateInstructions,
-                    label = { Text("Special Instructions") },
+                    label = { Text("SPECIAL INSTRUCTIONS") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -142,7 +137,7 @@ fun CreateReminderScreen(
                 OutlinedTextField(
                     value = uiState.amount,
                     onValueChange = viewModel::updateAmount,
-                    label = { Text("Amount (RM)") },
+                    label = { Text("AMOUNT (RM)") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
@@ -151,7 +146,7 @@ fun CreateReminderScreen(
                 OutlinedTextField(
                     value = uiState.recurrenceDays,
                     onValueChange = viewModel::updateRecurrenceDays,
-                    label = { Text("Recurrence (days)") },
+                    label = { Text("RECUR EVERY (DAYS)") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
@@ -159,26 +154,15 @@ fun CreateReminderScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Due date
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = uiState.dueDate?.let {
-                        "Due: ${it.toString().substring(0, 16)}"
-                    } ?: "No due date",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
-                )
-                TextButton(onClick = { showDatePicker = true }) {
-                    Text("Set Date")
-                }
-            }
+            WhenSection(
+                dueDate = uiState.dueDate,
+                onQuick = viewModel::applyQuickPreset,
+                onShowCustom = { showWhenDialog = true },
+                onClear = { viewModel.updateDueDate(null) }
+            )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Auto delete checkbox
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -187,7 +171,10 @@ fun CreateReminderScreen(
                     checked = uiState.autoDelete,
                     onCheckedChange = viewModel::updateAutoDelete
                 )
-                Text("Auto-delete when completed")
+                Text(
+                    text = "AUTO-DELETE WHEN DONE",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
 
             if (!uiState.isEditing) {
@@ -199,53 +186,169 @@ fun CreateReminderScreen(
                         checked = uiState.alsoAddTodo,
                         onCheckedChange = viewModel::updateAlsoAddTodo
                     )
-                    Text("Also add to todo list")
+                    Text(
+                        text = "ALSO ADD TO TODO LIST",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = { viewModel.saveReminder() },
+            BrutButton(
+                text = if (uiState.isEditing) "Update Reminder" else "Create Reminder",
                 enabled = uiState.isValid,
+                onClick = viewModel::saveReminder,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (uiState.isEditing) "Update" else "Create Reminder")
-            }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
-    if (showDatePicker) {
-        val datePickerState = rememberDatePickerState()
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val date = LocalDateTime.ofInstant(
-                            java.time.Instant.ofEpochMilli(millis),
-                            ZoneId.systemDefault()
-                        )
-                        val current = uiState.dueDate ?: LocalDateTime.now()
-                        viewModel.updateDueDate(
-                            LocalDateTime.of(
-                                date.year, date.month, date.dayOfMonth,
-                                current.hour, current.minute
-                            )
-                        )
-                    }
-                    showDatePicker = false
-                }) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
-                }
+    if (showWhenDialog) {
+        WhenDialog(
+            initial = uiState.dueDate,
+            onDismiss = { showWhenDialog = false },
+            onApply = { date, hour, minute ->
+                viewModel.applyDateTime(date, hour, minute)
+                showWhenDialog = false
             }
-        ) {
-            DatePicker(state = datePickerState)
+        )
+    }
+}
+
+@Composable
+private fun TypeSelector(
+    selected: ReminderType,
+    onSelect: (ReminderType) -> Unit
+) {
+    SectionHeader(title = "Reminder type")
+    Spacer(modifier = Modifier.height(8.dp))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ReminderType.values().forEach { type ->
+            BrutChip(
+                text = when (type) {
+                    ReminderType.GENERAL -> "GENERAL"
+                    ReminderType.MEDICAL -> "MEDICAL"
+                    ReminderType.MONTHLY -> "MONTHLY"
+                },
+                selected = selected == type,
+                onClick = { onSelect(type) },
+                modifier = Modifier.weight(1f)
+            )
         }
     }
+}
+
+@Composable
+private fun WhenSection(
+    dueDate: LocalDateTime?,
+    onQuick: (Int) -> Unit,
+    onShowCustom: () -> Unit,
+    onClear: () -> Unit
+) {
+    SectionHeader(title = "When")
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        BrutChip("5 MIN", Modifier.weight(1f)) { onQuick(5) }
+        BrutChip("15 MIN", Modifier.weight(1f)) { onQuick(15) }
+        BrutChip("30 MIN", Modifier.weight(1f)) { onQuick(30) }
+        BrutChip("1 HR", Modifier.weight(1f)) { onQuick(60) }
+    }
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    BrutOutlinedButton(
+        text = "Custom date & time",
+        onClick = onShowCustom,
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (dueDate != null) loudDateTime(dueDate) else "NO TIME SET",
+                style = MaterialTheme.typography.titleLarge,
+                color = if (dueDate != null) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        if (dueDate != null) {
+            TextButton(onClick = onClear) {
+                Text("CLEAR", style = MaterialTheme.typography.labelMedium)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WhenDialog(
+    initial: LocalDateTime?,
+    onDismiss: () -> Unit,
+    onApply: (LocalDate?, Int, Int) -> Unit
+) {
+    val base = initial ?: LocalDateTime.now()
+    var showTime by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+    val timePickerState = rememberTimePickerState(
+        initialHour = base.hour,
+        initialMinute = base.minute,
+        is24Hour = false
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "SET REMINDER TIME",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    BrutChip("DATE", Modifier.weight(1f), selected = !showTime) { showTime = false }
+                    BrutChip("TIME", Modifier.weight(1f), selected = showTime) { showTime = true }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                if (showTime) {
+                    TimePicker(state = timePickerState)
+                } else {
+                    DatePicker(state = datePickerState)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val date = datePickerState.selectedDateMillis?.let { millis ->
+                    Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                }
+                onApply(date, timePickerState.hour, timePickerState.minute)
+            }) {
+                Text("APPLY", style = MaterialTheme.typography.labelLarge)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("CANCEL", style = MaterialTheme.typography.labelLarge)
+            }
+        }
+    )
 }

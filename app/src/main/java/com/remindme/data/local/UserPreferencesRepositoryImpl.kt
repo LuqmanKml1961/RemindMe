@@ -24,6 +24,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     private object Keys {
         val AUTO_DELETE_DEFAULT = booleanPreferencesKey("auto_delete_default")
+        val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
     }
 
     override val autoDeleteDefault: Flow<Boolean> = context.userPreferencesDataStore.data
@@ -34,6 +35,17 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setAutoDeleteDefault(enabled: Boolean) {
         context.userPreferencesDataStore.edit { preferences ->
             preferences[Keys.AUTO_DELETE_DEFAULT] = enabled
+        }
+    }
+
+    override val hasSeenOnboarding: Flow<Boolean> = context.userPreferencesDataStore.data
+        .map { preferences ->
+            preferences[Keys.HAS_SEEN_ONBOARDING] ?: false
+        }
+
+    override suspend fun setHasSeenOnboarding(seen: Boolean) {
+        context.userPreferencesDataStore.edit { preferences ->
+            preferences[Keys.HAS_SEEN_ONBOARDING] = seen
         }
     }
 }

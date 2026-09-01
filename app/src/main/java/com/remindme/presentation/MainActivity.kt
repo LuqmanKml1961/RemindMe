@@ -8,18 +8,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import com.remindme.presentation.navigation.MainScaffold
 import com.remindme.presentation.navigation.NavGraph
 import com.remindme.presentation.navigation.Screen
+import com.remindme.presentation.ui.screens.OnboardingScreen
 import com.remindme.presentation.ui.theme.RemindMeTheme
 import com.remindme.presentation.viewmodel.ImportResult
 import com.remindme.presentation.viewmodel.ImportViewModel
+import com.remindme.presentation.viewmodel.OnboardingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -80,25 +84,47 @@ fun RemindMeApp(
     onImportCleared: () -> Unit = {}
 ) {
     val navController = rememberNavController()
+    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+    val hasSeenOnboarding by onboardingViewModel.hasSeenOnboarding.collectAsState(initial = null)
 
-    MainScaffold(
-        navController = navController,
-        onAddClick = {
-            navController.navigate(Screen.CreateReminderScreen.route)
-        }
-    ) { padding ->
-        NavGraph(
-            navController = navController,
-            onAddClick = {
-                navController.navigate(Screen.CreateReminderScreen.route)
+    when (hasSeenOnboarding) {
+        null -> SplashScreen()
+        false -> OnboardingScreen(onGetStarted = onboardingViewModel::finishOnboarding)
+        else -> {
+            MainScaffold(
+                navController = navController,
+                onAddClick = {
+                    navController.navigate(Screen.CreateReminderScreen.createRoute())
+                }
+            ) { padding ->
+                NavGraph(
+                    navController = navController,
+                    modifier = padding,
+                    onAddClick = {
+                        navController.navigate(Screen.CreateReminderScreen.createRoute())
+                    }
+                )
             }
-        )
+        }
     }
 
     importShareId.value?.let { shareId ->
         ImportDialog(
             shareId = shareId,
             onDismiss = onImportCleared
+        )
+    }
+}
+
+@Composable
+private fun SplashScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "REMINDME",
+            style = MaterialTheme.typography.displayMedium
         )
     }
 }
@@ -127,20 +153,52 @@ private fun ImportDialog(
                 text = { CircularProgressIndicator() }
             )
         }
-        uiState.result != null -> {}
+        uiState.result != null -> {
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = {
+                    Text(
+                        text = if (uiState.result == ImportResult.SUCCESS) "IMPORTED" else "NOT FOUND",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                },
+                text = {
+                    Text(
+                        text = uiState.importedTitle?.let { "Reminder imported: $it" }
+                            ?: "No reminder found for that link.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = onDismiss) {
+                        Text("OK", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            )
+        }
         else -> {
             AlertDialog(
                 onDismissRequest = onDismiss,
-                title = { Text("Import Reminder") },
-                text = { Text("A reminder was shared with you. Import it into RemindMe?") },
+                title = {
+                    Text(
+                        text = "IMPORT REMINDER",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                },
+                text = {
+                    Text(
+                        text = "A reminder was shared with you. Import it into RemindMe?",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
                 confirmButton = {
                     TextButton(onClick = { viewModel.importReminder(shareId) }) {
-                        Text("Import")
+                        Text("IMPORT", style = MaterialTheme.typography.labelLarge)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel")
+                        Text("CANCEL", style = MaterialTheme.typography.labelLarge)
                     }
                 }
             )

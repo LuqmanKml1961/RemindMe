@@ -1,38 +1,24 @@
 package com.remindme.presentation.ui.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.MedicalServices
-import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.remindme.domain.model.Reminder
 import com.remindme.domain.model.ReminderType
-import java.time.format.DateTimeFormatter
+import com.remindme.presentation.ui.theme.AccentAmber
+import java.time.LocalDateTime
 
 @Composable
 fun ReminderCard(
@@ -42,42 +28,57 @@ fun ReminderCard(
     onDelete: (Long) -> Unit,
     onShare: (Reminder) -> Unit
 ) {
-    val typeIcon: ImageVector = when (reminder.type) {
-        ReminderType.MEDICAL -> Icons.Filled.MedicalServices
-        ReminderType.MONTHLY -> Icons.Filled.Payments
-        ReminderType.GENERAL -> Icons.Filled.Notifications
-    }
+    val isDone = reminder.isCompleted
+    val accent = typeAccent(reminder.type)
+    val isOverdue = !isDone && reminder.dueDate != null && reminder.dueDate!!.isBefore(LocalDateTime.now())
+    val container = if (isDone) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+    val onSurface = MaterialTheme.colorScheme.onSurface
 
-    Card(
+    BrutCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        shadow = !isDone,
+        containerColor = container
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = typeIcon,
-                contentDescription = reminder.type.name,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.width(24.dp)
+        Column {
+            // Top accent bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(5.dp)
+                    .background(if (isOverdue) AccentAmber else accent)
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TypeTag(type = reminder.type)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    if (isOverdue) {
+                        Text(
+                            text = "OVERDUE",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = AccentAmber,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                    reminder.dueDate?.let { due ->
+                        Text(
+                            text = dueLabel(due),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isOverdue) AccentAmber else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
 
-            Column(modifier = Modifier.weight(1f)) {
+                Spacer(modifier = Modifier.height(6.dp))
+
                 Text(
                     text = reminder.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.titleLarge,
+                    textDecoration = if (isDone) TextDecoration.LineThrough else null,
+                    color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else onSurface
                 )
 
                 if (reminder.description.isNotBlank()) {
@@ -88,44 +89,69 @@ fun ReminderCard(
                     )
                 }
 
-                reminder.dueDate?.let { date ->
-                    Text(
-                        text = date.format(DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
                 if (reminder.type == ReminderType.MEDICAL && reminder.medicineName != null) {
                     Text(
-                        text = "${reminder.medicineName} ${reminder.dosage ?: ""}".trim(),
+                        text = "${reminder.medicineName}${reminder.dosage?.let { " · $it" } ?: ""}",
                         style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 12.sp
+                        fontWeight = FontWeight.Medium
                     )
+                    reminder.instructions?.let {
+                        if (it.isNotBlank()) {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
 
                 if (reminder.type == ReminderType.MONTHLY && reminder.amount != null) {
                     Text(
-                        text = "Amount: RM${reminder.amount}",
+                        text = "RM ${reminder.amount} per cycle",
                         style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 12.sp
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
 
-            IconButton(onClick = { onComplete(reminder.id) }) {
-                Icon(Icons.Filled.Check, contentDescription = "Complete")
-            }
-            IconButton(onClick = { onEdit(reminder.id) }) {
-                Icon(Icons.Filled.Edit, contentDescription = "Edit")
-            }
-            IconButton(onClick = { onShare(reminder) }) {
-                Icon(Icons.Filled.Share, contentDescription = "Share")
-            }
-            IconButton(onClick = { onDelete(reminder.id) }) {
-                Icon(Icons.Filled.Delete, contentDescription = "Delete")
+            HorizontalDivider(thickness = 1.dp, color = onSurface)
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                ActionCell("DONE", Modifier.weight(1f)) { onComplete(reminder.id) }
+                ActionCell("EDIT", Modifier.weight(1f)) { onEdit(reminder.id) }
+                ActionCell("SHARE", Modifier.weight(1f)) { onShare(reminder) }
+                ActionCell("DELETE", Modifier.weight(1f), danger = true) { onDelete(reminder.id) }
             }
         }
+    }
+}
+
+@Composable
+private fun ActionCell(
+    label: String,
+    modifier: Modifier = Modifier,
+    danger: Boolean = false,
+    onClick: () -> Unit
+) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val tint = when {
+        danger -> MaterialTheme.colorScheme.error
+        label == "DONE" -> MaterialTheme.colorScheme.primary
+        else -> onSurface
+    }
+    Box(
+        modifier = modifier
+            .border(start = BorderStroke(1.dp, onSurface))
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label.uppercase(),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = tint
+        )
     }
 }

@@ -2,49 +2,66 @@ package com.remindme.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Brutalist grayscale palette
-val Black = Color(0xFF000000)
-val DarkGray = Color(0xFF1A1A1A)
-val MediumGray = Color(0xFF2D2D2D)
-val LightGray = Color(0xFFE0E0E0)
-val White = Color(0xFFFFFFFF)
+// ---- Brutalist V2 base palette ----
+val Ink = Color(0xFF121212)        // primary text / borders
+val Paper = Color(0xFFF4F2EC)      // light background
+val SurfaceWhite = Color(0xFFFFFFFF)
+val MutedGray = Color(0xFF636363)
+val MutedLightGray = Color(0xFF8A8A8A)
 
-// Accent colors - minimal use
-val AccentBlue = Color(0xFF0066FF)
-val AccentRed = Color(0xFFFF0000)
-val AccentGreen = Color(0xFF00CC00)
+val Night = Color(0xFF0D0D0D)      // dark background
+val SurfaceDark = Color(0xFF171717)
+val TextLight = Color(0xFFF5F3EC)  // primary text (dark mode)
+val MutedDarkGray = Color(0xFF9B9B9B)
 
-// Material 3 color scheme
-val md_theme_light_primary = Black
-val md_theme_light_onPrimary = White
-val md_theme_light_primaryContainer = LightGray
-val md_theme_light_onPrimaryContainer = Black
-val md_theme_light_secondary = DarkGray
-val md_theme_light_onSecondary = White
-val md_theme_light_secondaryContainer = MediumGray
-val md_theme_light_onSecondaryContainer = White
-val md_theme_light_background = White
-val md_theme_light_onBackground = Black
-val md_theme_light_surface = White
-val md_theme_light_onSurface = Black
-val md_theme_light_surfaceVariant = LightGray
-val md_theme_light_onSurfaceVariant = DarkGray
+// ---- Type accents ----
+val AccentRed = Color(0xFFD90429)    // MEDICAL
+val AccentBlue = Color(0xFF0037FF)   // MONTHLY
+val AccentGreen = Color(0xFF009E60)  // completion / success
+val AccentAmber = Color(0xFFFFB703)  // overdue / warnings
+
+// ============================================================
+// Material 3 color scheme — LIGHT (brutalist)
+// ============================================================
+val md_theme_light_primary = Ink
+val md_theme_light_onPrimary = SurfaceWhite
+val md_theme_light_primaryContainer = SurfaceWhite
+val md_theme_light_onPrimaryContainer = Ink
+val md_theme_light_secondary = MutedGray
+val md_theme_light_onSecondary = SurfaceWhite
+val md_theme_light_secondaryContainer = SurfaceWhite
+val md_theme_light_onSecondaryContainer = Ink
+val md_theme_light_tertiary = AccentBlue
+val md_theme_light_onTertiary = SurfaceWhite
+val md_theme_light_background = Paper
+val md_theme_light_onBackground = Ink
+val md_theme_light_surface = SurfaceWhite
+val md_theme_light_onSurface = Ink
+val md_theme_light_surfaceVariant = Paper
+val md_theme_light_onSurfaceVariant = MutedGray
+val md_theme_light_outline = Ink
 val md_theme_light_error = AccentRed
-val md_theme_light_onError = White
+val md_theme_light_onError = SurfaceWhite
 
-val md_theme_dark_primary = White
-val md_theme_dark_onPrimary = Black
-val md_theme_dark_primaryContainer = DarkGray
-val md_theme_dark_onPrimaryContainer = White
-val md_theme_dark_secondary = LightGray
-val md_theme_dark_onSecondary = Black
-val md_theme_dark_secondaryContainer = MediumGray
-val md_theme_dark_onSecondaryContainer = White
-val md_theme_dark_background = Black
-val md_theme_dark_onBackground = White
-val md_theme_dark_surface = DarkGray
-val md_theme_dark_onSurface = White
-val md_theme_dark_surfaceVariant = MediumGray
-val md_theme_dark_onSurfaceVariant = LightGray
-val md_theme_dark_error = AccentRed
-val md_theme_dark_onError = White
+// ============================================================
+// Material 3 color scheme — DARK (brutalist)
+// ============================================================
+val md_theme_dark_primary = TextLight
+val md_theme_dark_onPrimary = Night
+val md_theme_dark_primaryContainer = SurfaceDark
+val md_theme_dark_onPrimaryContainer = TextLight
+val md_theme_dark_secondary = MutedDarkGray
+val md_theme_dark_onSecondary = Night
+val md_theme_dark_secondaryContainer = SurfaceDark
+val md_theme_dark_onSecondaryContainer = TextLight
+val md_theme_dark_tertiary = AccentBlue
+val md_theme_dark_onTertiary = SurfaceWhite
+val md_theme_dark_background = Night
+val md_theme_dark_onBackground = TextLight
+val md_theme_dark_surface = SurfaceDark
+val md_theme_dark_onSurface = TextLight
+val md_theme_dark_surfaceVariant = Night
+val md_theme_dark_onSurfaceVariant = MutedDarkGray
+val md_theme_dark_outline = TextLight
+val md_theme_dark_error = Color(0xFFFF5252)
+val md_theme_dark_onError = Night

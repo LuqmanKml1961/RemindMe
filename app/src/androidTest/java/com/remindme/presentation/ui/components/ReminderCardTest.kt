@@ -64,7 +64,7 @@ class ReminderCardTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Metformin 500mg").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Metformin · 500mg").assertIsDisplayed()
     }
 
     @Test
@@ -83,6 +83,6 @@ class ReminderCardTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Amount: RM1200.0").assertIsDisplayed()
+        composeTestRule.onNodeWithText("RM 1200.0 per cycle").assertIsDisplayed()
     }
 }

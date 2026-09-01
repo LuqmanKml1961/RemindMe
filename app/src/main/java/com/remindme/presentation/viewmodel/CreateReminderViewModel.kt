@@ -97,6 +97,25 @@ class CreateReminderViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(dueDate = date)
     }
 
+    fun applyQuickPreset(minutes: Int) {
+        _uiState.value = _uiState.value.copy(dueDate = LocalDateTime.now().plusMinutes(minutes.toLong()))
+    }
+
+    fun updateTime(hour: Int, minute: Int) {
+        val base = _uiState.value.dueDate ?: LocalDateTime.now()
+        _uiState.value = _uiState.value.copy(
+            dueDate = LocalDateTime.of(base.year, base.month, base.dayOfMonth, hour, minute)
+        )
+    }
+
+    fun applyDateTime(date: java.time.LocalDate?, hour: Int, minute: Int) {
+        val base = _uiState.value.dueDate ?: LocalDateTime.now()
+        val resolvedDate = date ?: base.toLocalDate()
+        _uiState.value = _uiState.value.copy(
+            dueDate = LocalDateTime.of(resolvedDate, java.time.LocalTime.of(hour, minute))
+        )
+    }
+
     fun updateAutoDelete(autoDelete: Boolean) {
         _uiState.value = _uiState.value.copy(autoDelete = autoDelete)
     }
