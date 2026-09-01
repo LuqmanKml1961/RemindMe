@@ -40,7 +40,8 @@ abstract class AppDatabase : RoomDatabase() {
                         "reminder_id INTEGER NOT NULL, " +
                         "name TEXT NOT NULL, " +
                         "dosage TEXT NOT NULL, " +
-                        "instructions TEXT NOT NULL)"
+                        "instructions TEXT NOT NULL, " +
+                        "FOREIGN KEY(reminder_id) REFERENCES reminders(id) ON UPDATE NO ACTION ON DELETE CASCADE)"
                 )
                 db.execSQL(
                     "CREATE INDEX IF NOT EXISTS index_medications_reminder_id " +
