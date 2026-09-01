@@ -62,6 +62,11 @@ abstract class AppDatabase : RoomDatabase() {
                         "note TEXT NOT NULL, " +
                         "created_at INTEGER NOT NULL)"
                 )
+                // Drop legacy columns that moved to medications table / replaced by recurrence
+                db.execSQL("ALTER TABLE reminders DROP COLUMN medicine_name")
+                db.execSQL("ALTER TABLE reminders DROP COLUMN dosage")
+                db.execSQL("ALTER TABLE reminders DROP COLUMN instructions")
+                db.execSQL("ALTER TABLE reminders DROP COLUMN recurrence_days")
             }
         }
     }
