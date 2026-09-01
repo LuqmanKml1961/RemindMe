@@ -60,8 +60,8 @@ fun RemindMeTheme(
     }
 
     val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
+    SideEffect {
+        if (view.context is Activity) {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
