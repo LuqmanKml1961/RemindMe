@@ -37,4 +37,7 @@ interface ReminderDao {
 
     @Query("SELECT * FROM reminders WHERE is_completed = 1")
     suspend fun getCompletedReminders(): List<ReminderEntity>
+
+    @Query("SELECT * FROM reminders WHERE due_date IS NOT NULL AND is_completed = 0 AND is_archived = 0")
+    suspend fun getAllScheduledReminders(): List<ReminderEntity>
 }

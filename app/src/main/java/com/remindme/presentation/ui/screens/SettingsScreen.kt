@@ -1,14 +1,22 @@
 package com.remindme.presentation.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.remindme.presentation.viewmodel.SettingsViewModel
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -21,15 +29,12 @@ fun SettingsScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Auto-delete default setting
-        var autoDeleteDefault by remember { mutableStateOf(false) }
-
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface)
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Row(
@@ -42,8 +47,8 @@ fun SettingsScreen() {
                         modifier = Modifier.weight(1f)
                     )
                     Switch(
-                        checked = autoDeleteDefault,
-                        onCheckedChange = { autoDeleteDefault = it }
+                        checked = uiState.autoDeleteDefault,
+                        onCheckedChange = viewModel::setAutoDeleteDefault
                     )
                 }
                 Text(
@@ -61,7 +66,7 @@ fun SettingsScreen() {
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface)
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(

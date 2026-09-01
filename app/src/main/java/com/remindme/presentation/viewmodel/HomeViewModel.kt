@@ -2,8 +2,10 @@ package com.remindme.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.remindme.data.local.AlarmScheduler
 import com.remindme.domain.model.Reminder
 import com.remindme.domain.repository.ReminderRepository
+import com.remindme.domain.usecase.ShareReminderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -20,8 +22,12 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: ReminderRepository
+    private val repository: ReminderRepository,
+    private val alarmScheduler: AlarmScheduler,
+    private val shareReminderUseCase: ShareReminderUseCase
 ) : ViewModel() {
+
+    fun generateShareText(reminder: Reminder): String = shareReminderUseCase.generateShareText(reminder)
 
     val uiState: StateFlow<HomeUiState> = repository.getAllReminders()
         .map { reminders ->
@@ -35,14 +41,22 @@ class HomeViewModel @Inject constructor(
 
     fun completeReminder(id: Long) {
         viewModelScope.launch {
-            repository.completeReminder(id)
+            val reminder = repository.getReminderById(id).first()
+            reminder?.let {
+                alarmScheduler.cancel(it)
+                repository.completeReminder(id)
+            }
             cleanupCompleted()
         }
     }
 
     fun deleteReminder(id: Long) {
         viewModelScope.launch {
-            repository.deleteReminder(id)
+            val reminder = repository.getReminderById(id).first()
+            reminder?.let {
+                alarmScheduler.cancel(it)
+                repository.deleteReminder(id)
+            }
         }
     }
 

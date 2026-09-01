@@ -62,4 +62,8 @@ class ReminderRepositoryImpl @Inject constructor(
     override suspend fun getCompletedReminders(): List<Reminder> {
         return reminderDao.getCompletedReminders().map { it.toDomain() }
     }
+
+    override suspend fun getAllScheduledReminders(): List<Reminder> {
+        return reminderDao.getAllScheduledReminders().map { it.toDomain() }
+    }
 }

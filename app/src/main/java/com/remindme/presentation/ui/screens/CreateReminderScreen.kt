@@ -190,6 +190,19 @@ fun CreateReminderScreen(
                 Text("Auto-delete when completed")
             }
 
+            if (!uiState.isEditing) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = uiState.alsoAddTodo,
+                        onCheckedChange = viewModel::updateAlsoAddTodo
+                    )
+                    Text("Also add to todo list")
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(

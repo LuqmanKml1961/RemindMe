@@ -15,4 +15,5 @@ interface ReminderRepository {
     suspend fun archiveReminder(id: Long)
     suspend fun deleteCompletedReminders()
     suspend fun getCompletedReminders(): List<Reminder>
+    suspend fun getAllScheduledReminders(): List<Reminder>
 }

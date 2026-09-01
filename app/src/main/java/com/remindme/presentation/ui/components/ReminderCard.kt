@@ -21,6 +21,7 @@ import androidx.compose.material3.icons.filled.Delete
 import androidx.compose.material3.icons.filled.MedicalServices
 import androidx.compose.material3.icons.filled.Payments
 import androidx.compose.material3.icons.filled.Notifications
+import androidx.compose.material3.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +39,8 @@ fun ReminderCard(
     reminder: Reminder,
     onComplete: (Long) -> Unit,
     onEdit: (Long) -> Unit,
-    onDelete: (Long) -> Unit
+    onDelete: (Long) -> Unit,
+    onShare: (Reminder) -> Unit
 ) {
     val typeIcon: ImageVector = when (reminder.type) {
         ReminderType.MEDICAL -> Icons.Filled.MedicalServices
@@ -117,6 +119,9 @@ fun ReminderCard(
             }
             IconButton(onClick = { onEdit(reminder.id) }) {
                 Icon(Icons.Filled.Edit, contentDescription = "Edit")
+            }
+            IconButton(onClick = { onShare(reminder) }) {
+                Icon(Icons.Filled.Share, contentDescription = "Share")
             }
             IconButton(onClick = { onDelete(reminder.id) }) {
                 Icon(Icons.Filled.Delete, contentDescription = "Delete")

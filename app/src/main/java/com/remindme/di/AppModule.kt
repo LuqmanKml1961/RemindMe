@@ -1,9 +1,11 @@
 package com.remindme.di
 
+import com.remindme.data.local.UserPreferencesRepositoryImpl
 import com.remindme.data.repository.ReminderRepositoryImpl
 import com.remindme.data.repository.TodoRepositoryImpl
 import com.remindme.domain.repository.ReminderRepository
 import com.remindme.domain.repository.TodoRepository
+import com.remindme.domain.repository.UserPreferencesRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -25,4 +27,10 @@ abstract class AppModule {
     abstract fun bindTodoRepository(
         todoRepositoryImpl: TodoRepositoryImpl
     ): TodoRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserPreferencesRepository(
+        userPreferencesRepositoryImpl: UserPreferencesRepositoryImpl
+    ): UserPreferencesRepository
 }
