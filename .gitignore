@@ -14,8 +14,11 @@ Thumbs.db
 
 # Android
 local.properties
+keystore.properties
 *.apk
 *.aab
+*.jks
+*.keystore
 
 # Docs - only README.md is allowed (all other .md files are excluded)
 *.md
